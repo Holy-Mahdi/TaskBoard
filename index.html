@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="/manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>To-Do Manager</title>
@@ -40,8 +39,6 @@
             cursor: pointer;
         }
     </style>
-    
-
 </head>
 <body>
     <div class="container">
@@ -49,7 +46,7 @@
         <input type="text" id="taskInput" placeholder="Add a new task">
         <button onclick="addTask()">Add</button>
         <ul id="taskList"></ul>
-        
+        <button onclick="shareTasks()">Share Tasks</button>
     </div>
     
     <script>
@@ -86,6 +83,34 @@
             localStorage.setItem("tasks", JSON.stringify(tasks));
             loadTasks();
         }
+
+        function shareTasks() {
+            let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+            if (tasks.length === 0) {
+                alert("No tasks to share!");
+                return;
+            }
+            let encodedTasks = encodeURIComponent(JSON.stringify(tasks));
+            let shareLink = `${window.location.origin}${window.location.pathname}?tasks=${encodedTasks}`;
+            
+            navigator.clipboard.writeText(shareLink).then(() => {
+                alert("Shareable link copied to clipboard!");
+            }).catch(err => {
+                console.error("Error copying link: ", err);
+            });
+        }
+
+        function loadSharedTasks() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedTasks = urlParams.get("tasks");
+            if (sharedTasks) {
+                localStorage.setItem("tasks", sharedTasks);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+            loadTasks();
+        }
+
+        loadSharedTasks();
     </script>
 </body>
 </html>
